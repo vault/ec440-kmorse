@@ -13,7 +13,7 @@ static int __init message_init(void)
     alloc_chrdev_region(&device, 0, message_count, DEV_NAME);
     major = MAJOR(device);
 
-    int g = gpio_request(PIN);
+    int g = gpio_request(PIN, "morse");
     if (g != 0) {
         return -EINVAL;
     }
