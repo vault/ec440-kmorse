@@ -39,6 +39,7 @@ static int device_is_open = 0;
 static int major;
 
 static char* message_buffer;
+static int message_pos;
 static int message_length;
 static int valid;
 
