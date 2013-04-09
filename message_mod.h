@@ -4,16 +4,18 @@
 
 #include <linux/kernel.h>
 #include <linux/module.h>
+#include <linux/moduleparam.h>
+#include <linux/device.h>
 #include <linux/fs.h>
+#include <linux/cdev.h>
 #include <linux/slab.h>
 #include <linux/errno.h>
-#include <linux/list.h>
 #include <asm/uaccess.h>
 
 #define DEV_NAME "message"
 #define AUTHOR "Michael Abed <michaelabed@gmail.com>"
 #define DESC "A device that holds a message"
-#define LICENSE "DUAL MIT/GPL"
+#define LICENSE "GPL"
 
 MODULE_AUTHOR(AUTHOR);
 MODULE_DESCRIPTION(DESC);
@@ -22,6 +24,10 @@ MODULE_SUPPORTED_DEVICE(DEV_NAME);
 
 static int __init message_init(void);
 static void __exit message_exit(void);
+
+static short message_count = 1;
+module_param(message_count, short, S_IRUSR | S_IRGRP | S_IROTH);
+MODULE_PARM_DESC(message_count, "Number of message devices to create");
 
 static int message_open(struct inode *inode, struct file *file);
 static int message_release(struct inode *inode, struct file *file);
@@ -38,15 +44,18 @@ static struct file_operations message_ops = {
 };
 
 static int major;
+static dev_t device;
+static struct class *dev_class;
 
 struct message {
     char buffer[32];
+    struct cdev dev;
     int minor;
     int open;
     int pos;
     int len;
     int valid;
-    struct list_head list;
+    //struct list_head list;
 };
 
 union min_data {
@@ -57,10 +66,8 @@ union min_data {
 typedef union min_data min_data;
 
 static struct message *new_message(int minor);
-static struct message *find_message(int minor);
-static void add_message(struct message *msg);
 
-static struct message* message_list = NULL;
+static struct message** message_list;
 
 #endif
 
