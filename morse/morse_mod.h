@@ -14,10 +14,14 @@
 #include <linux/timer.h>
 #include <linux/gpio.h>
 
+#include "morse.h"
+
 #define DEV_NAME "message"
 #define AUTHOR "Michael Abed <michaelabed@gmail.com>"
-#define DESC "A device that holds a message"
+#define DESC "A morse code blinker"
 #define LICENSE "GPL"
+
+#define PIN 17
 
 MODULE_AUTHOR(AUTHOR);
 MODULE_DESCRIPTION(DESC);
@@ -62,6 +66,7 @@ struct message {
 };
 
 struct morse_display {
+    struct message *msg;
     int msg_pos;
     int l_pos;
     int done;
@@ -75,11 +80,16 @@ union min_data {
 
 typedef union min_data min_data;
 
+static struct timer_list timer;
+
 static struct message *new_message(int minor);
 static struct message** message_list;
 static struct morse_display morse;
 
-static void run_display(void);
+static void step_display(unsigned long arg);
+
+static void start_morse(int msg_idx);
+static char* morse_char(char x);
 
 #endif
 
