@@ -4,13 +4,15 @@
 
 #include <linux/kernel.h>
 #include <linux/module.h>
-#include <linux/moduleparam.h>
 #include <linux/device.h>
 #include <linux/fs.h>
 #include <linux/cdev.h>
 #include <linux/slab.h>
 #include <linux/errno.h>
 #include <asm/uaccess.h>
+
+#include <linux/timer.h>
+#include <linux/gpio.h>
 
 #define DEV_NAME "message"
 #define AUTHOR "Michael Abed <michaelabed@gmail.com>"
@@ -25,9 +27,10 @@ MODULE_SUPPORTED_DEVICE(DEV_NAME);
 static int __init message_init(void);
 static void __exit message_exit(void);
 
+// We're hard coding this to 1 for this module
 static short message_count = 1;
-module_param(message_count, short, S_IRUSR | S_IRGRP | S_IROTH);
-MODULE_PARM_DESC(message_count, "Number of message devices to create");
+//module_param(message_count, short, S_IRUSR | S_IRGRP | S_IROTH);
+//MODULE_PARM_DESC(message_count, "Number of message devices to create");
 
 static int message_open(struct inode *inode, struct file *file);
 static int message_release(struct inode *inode, struct file *file);
@@ -58,6 +61,13 @@ struct message {
     //struct list_head list;
 };
 
+struct morse_display {
+    int msg_pos;
+    int l_pos;
+    int done;
+    int state;
+};
+
 union min_data {
     void *pt;
     int minor;
@@ -66,8 +76,10 @@ union min_data {
 typedef union min_data min_data;
 
 static struct message *new_message(int minor);
-
 static struct message** message_list;
+static struct morse_display morse;
+
+static void run_display(void);
 
 #endif
 

@@ -1,5 +1,5 @@
 
-#include "message_mod.h"
+#include "morse_mod.h"
 
 module_init(message_init);
 module_exit(message_exit);
@@ -123,6 +123,9 @@ static ssize_t message_write(struct file *filp, const char *buff, size_t len, lo
 
     msg->len = to_copy;
     msg->buffer[len+1] = '\0';
+
+    if (to_copy == 0)
+        msg->buffer[0] = '\0';
 
     msg->valid = 1;
     return len;
