@@ -48,6 +48,7 @@ static void __exit message_exit(void)
     kfree(message_list);
     class_destroy(dev_class);
     unregister_chrdev_region(device, message_count);
+    gpio_free(PIN);
     printk(KERN_INFO "Unloaded module: morse_mod\n");
 }
 
