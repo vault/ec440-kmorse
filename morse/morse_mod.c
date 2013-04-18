@@ -13,6 +13,12 @@ static int __init message_init(void)
     alloc_chrdev_region(&device, 0, message_count, DEV_NAME);
     major = MAJOR(device);
 
+    int g = gpio_request(PIN);
+    if (g != 0) {
+        return -EINVAL;
+    }
+    gpio_direction_output(PIN, 0);
+
     message_list = kcalloc(sizeof(struct message*), message_count, GFP_KERNEL);
     for (i = 0; i < message_count; i++) {
         devno = MKDEV(major, i);
@@ -87,8 +93,8 @@ static void step_display(unsigned long arg)
     char *code = morse_char(morse.msg->buffer[morse.msg_pos]);
 
     if (morse.state == 0 && code != NULL) {
-        //TODO: Turn on LED
 
+        gpio_set_value(PIN, 1);
         printk(KERN_INFO"LED ON: %c, letter %c\n", 
                 code[morse.l_pos], morse.msg->buffer[morse.msg_pos]);
 
@@ -99,6 +105,7 @@ static void step_display(unsigned long arg)
             delay = 1 * time_unit;
 
     } else if (code == NULL) {
+        gpio_set_value(PIN, 0);
         printk(KERN_INFO"LED DELAY: letter %c\n", morse.msg->buffer[morse.msg_pos]);
 
         morse.state = 0;
@@ -110,7 +117,7 @@ static void step_display(unsigned long arg)
             morse.done = 1;
 
     } else {
-        //TODO: Turn off LED
+        gpio_set_value(PIN, 0);
 
         printk(KERN_INFO"LED OFF: %c, letter %c\n", 
                 code[morse.l_pos], morse.msg->buffer[morse.msg_pos]);
