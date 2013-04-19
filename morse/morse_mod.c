@@ -6,14 +6,14 @@ module_exit(message_exit);
 
 static int __init message_init(void)
 {
-    int err, i;
+    int err, i, g;
     struct message *msg;
     dev_t devno;
     dev_class = class_create(THIS_MODULE, "morse_mod");
     alloc_chrdev_region(&device, 0, message_count, DEV_NAME);
     major = MAJOR(device);
 
-    int g = gpio_request(PIN, "morse");
+    g = gpio_request(PIN, "morse");
     if (g != 0) {
         return -EINVAL;
     }
