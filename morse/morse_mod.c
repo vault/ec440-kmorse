@@ -26,8 +26,10 @@ static int __init message_init(void)
         message_list[i] = msg;
 
         err = cdev_add(&msg->dev, devno, 1);
-        if (err)
+        if (err) {
             printk(KERN_NOTICE"Error %d adding message%d", err, i);
+            return -EINVAL;
+        }
         device_create(dev_class, NULL, devno, NULL, "morse%d", i);
     }
 
@@ -96,8 +98,6 @@ static void step_display(unsigned long arg)
     if (morse.state == 0 && code != NULL) {
 
         gpio_set_value(PIN, 1);
-        printk(KERN_INFO"LED ON: %c, letter %c\n", 
-                code[morse.l_pos], morse.msg->buffer[morse.msg_pos]);
 
         morse.state = 1;
         if (code[morse.l_pos] == '-')
@@ -107,7 +107,6 @@ static void step_display(unsigned long arg)
 
     } else if (code == NULL) {
         gpio_set_value(PIN, 0);
-        printk(KERN_INFO"LED DELAY: letter %c\n", morse.msg->buffer[morse.msg_pos]);
 
         morse.state = 0;
         morse.msg_pos++;
@@ -119,9 +118,6 @@ static void step_display(unsigned long arg)
 
     } else {
         gpio_set_value(PIN, 0);
-
-        printk(KERN_INFO"LED OFF: %c, letter %c\n", 
-                code[morse.l_pos], morse.msg->buffer[morse.msg_pos]);
 
         morse.state = 0;
         morse.l_pos++;
@@ -150,7 +146,6 @@ static void step_display(unsigned long arg)
         add_timer(&timer);
     } else {
         morse.msg->open--;
-        printk(KERN_INFO"Finished Morse\n");
     }
 }
 
@@ -221,6 +216,7 @@ static ssize_t message_read(struct file *filp, char *buffer, size_t len, loff_t 
 static ssize_t message_write(struct file *filp, const char *buff, size_t len, loff_t *off)
 {
     int to_copy;
+    int left;
     struct message *msg = message_list[((min_data)filp->private_data).minor];
 
     if (msg->valid) {
@@ -228,7 +224,9 @@ static ssize_t message_write(struct file *filp, const char *buff, size_t len, lo
     }
 
     to_copy = len > 31 ? 31 : len;
-    copy_from_user(msg->buffer, buff, to_copy);
+    left = copy_from_user(msg->buffer, buff, to_copy);
+    if (left != 0)
+        return -EINVAL;
 
     msg->len = to_copy;
     msg->buffer[len+1] = '\0';
