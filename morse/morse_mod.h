@@ -1,6 +1,6 @@
 
-#ifndef MESSAGE_MOD
-#define MESSAGE_MOD
+#ifndef MORSE_MOD
+#define MORSE_MOD
 
 #include <linux/kernel.h>
 #include <linux/module.h>
@@ -16,7 +16,7 @@
 
 #include "morse.h"
 
-#define DEV_NAME "message"
+#define DEV_NAME "morse"
 #define AUTHOR "Michael Abed <michaelabed@gmail.com>"
 #define DESC "A morse code blinker"
 #define LICENSE "GPL"
