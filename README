@@ -1,0 +1,10 @@
+
+A linux kernel module for the raspberry pi that blinks in morse code the
+message written to it.
+
+This was a homework assignment. The message folder turns into a kernel
+module that look like /dev/message0. You can write a message to it and read
+it back out later. The morse folder turns into a module that implements
+a morse code. You write to /dev/morse0 and (assuming this is running on
+a raspberry pi, and is connected to an LED on GPIO 17) will blink out your
+message in morse code.
